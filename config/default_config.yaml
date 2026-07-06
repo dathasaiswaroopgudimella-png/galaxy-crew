@@ -1,0 +1,53 @@
+# PHSE Configuration System - Default Configuration
+# All scientific and system constants must be configured here.
+
+seed: 42
+
+paths:
+  dfsar_path: "datasets/raw/dfsar"
+  ohrc_path: "datasets/raw/ohrc"
+  output_dir: "outputs"
+  log_dir: "logs"
+
+preprocessing:
+  target_resolution_m: 5.0
+  nodata_value: -9999.0
+  normalize: true
+  dfsar_backscatter_min_db: -40.0
+  dfsar_backscatter_max_db: 5.0
+
+alignment:
+  # Default Lunar CRS or dynamic alignment
+  # target_crs can be a EPSG, WKT, or proj4 string. If "auto", aligns DFSAR to OHRC coordinate space.
+  target_crs: "auto"
+  resampling_method: "bilinear" # Options: nearest, bilinear, cubic, lanczos
+
+validation:
+  allowed_formats:
+    - ".tif"
+    - ".tiff"
+    - ".img"
+  min_data_percentage: 10.0 # Minimum percent of valid pixels required
+  crs_check: true
+
+analysis:
+  radar:
+    cpr_window_size: 5
+    dop_window_size: 5
+    transmit_hand: "left"
+  terrain:
+    slope_threshold_critical: 15.0
+    roughness_window_size: 5
+    roughness_threshold_critical: 0.5
+    sun_elevation_deg: 10.0
+    sun_azimuth_deg: 45.0
+    boulder_min_sigma: 1.0
+    boulder_max_sigma: 4.0
+    boulder_num_sigma: 5
+    boulder_threshold: 0.02
+    boulder_density_window_size: 21
+    boulder_density_threshold_critical: 5.0
+    weight_slope: 0.4
+    weight_roughness: 0.3
+    weight_boulder: 0.3
+

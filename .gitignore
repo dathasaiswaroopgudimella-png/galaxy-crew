@@ -1,0 +1,60 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.egg
+*.egg-info/
+/dist/
+!frontend/dist/
+build/
+.eggs/
+*.whl
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Environment / secrets — NEVER COMMIT
+.env
+.env.local
+.env.*.local
+
+# Rasterio / GDAL temp files
+*.tif.aux.xml
+*.aux.xml
+
+# Outputs & cache
+outputs/
+.cache/
+logs/
+*.log
+
+# Datasets (large binaries)
+datasets/raw/
+datasets/*.tif
+datasets/*.h5
+datasets/*.nc
+datasets/*.hdf5
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Pytest
+.pytest_cache/
+htmlcov/
+.coverage
+
+# Node
+frontend/node_modules/

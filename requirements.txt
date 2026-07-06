@@ -1,0 +1,45 @@
+# ============================================================
+# PHSE — Galaxy Crew Project
+# Full dependency list
+# Install with: pip install -r requirements.txt
+# ============================================================
+
+# --- Core Scientific Stack ---
+numpy>=2.2.6
+scipy>=1.15.3
+rasterio>=1.4.4
+scikit-image>=0.25.2
+opencv-python-headless>=5.0.0
+shapely>=2.1.2
+pyproj>=3.7.1
+xarray>=2025.6.1
+h5py>=3.16.0
+pandas>=2.3.3
+pillow>=12.2.0
+
+# --- Configuration & Validation ---
+pydantic>=2.13.4
+pydantic-settings>=2.0.0
+python-dotenv>=1.2.2
+
+# --- Logging & CLI ---
+loguru>=0.7.3
+rich>=15.0.0
+click>=8.4.2
+tqdm>=4.68.3
+
+# --- API Server ---
+fastapi>=0.139.0
+uvicorn>=0.49.0
+
+# --- AI / LLM ---
+openai>=2.43.0
+httpx>=0.28.1
+requests>=2.34.2
+
+# --- Testing ---
+pytest>=9.1.1
+pytest-cov>=6.0.0
+
+# --- Visualization ---
+matplotlib>=3.10.3
