@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { usePHSEStore } from '../stores/usePHSEStore'
-import { Compass, Brain, Cpu, RefreshCw, Award, MessageSquare, Send, MapPin, Activity } from 'lucide-react'
-import { MetricCard } from '../components/scientific/MetricCard'
+import { Compass, Brain, Cpu, RefreshCw, Award, Send, Activity } from 'lucide-react'
 
 interface MissionLayoutProps {
   children: React.ReactNode;
@@ -62,158 +61,174 @@ export const MissionLayout: React.FC<MissionLayoutProps> = ({ children }) => {
   const iceVolume = results ? `${results.total_ice_m3.toFixed(2)} M³` : '0.00 M³';
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-[#030508] text-[#e2e8f0] font-sans overflow-hidden hud-grid-pattern">
-      {/* 1. Scientific Header Bar */}
-      <header className="flex items-center justify-between px-6 py-2.5 bg-[#090b0e]/95 backdrop-blur-lg border-b border-cyan-500/20 select-none shrink-0 z-10 shadow-[0_4px_20px_rgba(0,0,0,0.8)]">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-cyan-500/10 border border-cyan-500/30 rounded text-cyan-400">
-            <Compass size={16} className="animate-spin-slow" />
+    <div className="flex h-screen w-screen bg-[#030508] text-[#e2e8f0] font-sans overflow-hidden grid-overlay">
+      {/* 1. Sidebar console */}
+      <aside className="w-[260px] shrink-0 matte-engineering flex flex-col h-full z-40 relative select-none">
+        {/* Logo Section */}
+        <div className="px-6 py-6 border-b border-white/5 flex flex-col gap-1">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 bg-cyan-500/10 rounded border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+              <Compass size={16} className="animate-spin-slow" />
+            </div>
+            <div>
+              <h2 className="text-xs font-black tracking-widest text-white uppercase">PHSE CONTROL</h2>
+              <span className="text-[7.5px] text-white/30 font-bold tracking-widest font-mono uppercase block leading-none mt-0.5">Space-Tech Engine</span>
+            </div>
           </div>
-          <div>
-            <h1 className="text-[11px] font-black tracking-widest text-white uppercase">PHSE Space-Tech Engine</h1>
-            <span className="text-[8px] text-white/40 font-bold tracking-widest font-mono uppercase block leading-none mt-0.5">Lunar Landing Suitability Solver</span>
-          </div>
+          <span className="text-[7.5px] text-cyan-400 font-mono tracking-widest uppercase block mt-1.5">● Active Session</span>
         </div>
 
-        {/* Tab switcher buttons */}
-        <div className="flex bg-white/[0.02] border border-white/10 rounded p-0.5 text-[9px] font-bold font-mono uppercase tracking-wider">
+        {/* Navigation Tabs */}
+        <nav className="flex-1 px-3 py-4 space-y-1">
           <button 
             onClick={() => setActiveMode('overview')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded transition-all duration-300 cursor-pointer ${
+            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded text-[10px] font-bold font-mono tracking-widest transition-all text-left cursor-pointer uppercase ${
               activeMode === 'overview' 
-                ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 shadow-[0_0_8px_rgba(6,182,212,0.15)]' 
-                : 'text-white/40 hover:text-white'
+                ? 'text-cyan-400 edge-lit-cyan bg-cyan-500/5 border border-cyan-500/10' 
+                : 'text-white/40 hover:text-white/75 hover:bg-white/[0.01] border border-transparent'
             }`}
           >
-            <Compass size={11} />
-            <span>Mission Overview</span>
+            <Compass size={14} />
+            <span>Terrain Overview</span>
           </button>
           <button 
             onClick={() => setActiveMode('reasoning')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded transition-all duration-300 cursor-pointer ${
+            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded text-[10px] font-bold font-mono tracking-widest transition-all text-left cursor-pointer uppercase ${
               activeMode === 'reasoning' 
-                ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 shadow-[0_0_8px_rgba(6,182,212,0.15)]' 
-                : 'text-white/40 hover:text-white'
+                ? 'text-cyan-400 edge-lit-cyan bg-cyan-500/5 border border-cyan-500/10' 
+                : 'text-white/40 hover:text-white/75 hover:bg-white/[0.01] border border-transparent'
             }`}
           >
-            <Brain size={11} />
-            <span>Scientific Reasoning</span>
+            <Brain size={14} />
+            <span>Scientific Logic</span>
           </button>
           <button 
             onClick={() => setActiveMode('engineering')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded transition-all duration-300 cursor-pointer ${
+            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded text-[10px] font-bold font-mono tracking-widest transition-all text-left cursor-pointer uppercase ${
               activeMode === 'engineering' 
-                ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 shadow-[0_0_8px_rgba(6,182,212,0.15)]' 
-                : 'text-white/40 hover:text-white'
+                ? 'text-cyan-400 edge-lit-cyan bg-cyan-500/5 border border-cyan-500/10' 
+                : 'text-white/40 hover:text-white/75 hover:bg-white/[0.01] border border-transparent'
             }`}
           >
-            <Cpu size={11} />
-            <span>Engineering Logs</span>
+            <Cpu size={14} />
+            <span>Telemetry Terminal</span>
           </button>
-        </div>
+        </nav>
 
-        {/* ISRO Tag & Run button */}
-        <div className="flex items-center gap-4">
-          <span className="flex items-center gap-1.5 text-[8px] text-white/60 border border-white/10 px-2.5 py-1 rounded bg-white/[0.01] font-bold font-mono tracking-widest uppercase">
-            <Award size={10} className="text-amber-500" />
-            <span>Bharthiya Antariksh 2026</span>
-          </span>
+        {/* Assistant & Controls Panel */}
+        <div className="p-4 border-t border-white/5 space-y-4">
+          {/* Initiate Scan Button */}
           <button 
             onClick={triggerRun}
             disabled={recalculating}
-            className="flex items-center gap-2 px-3.5 py-1.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:opacity-90 disabled:opacity-50 text-black font-black text-[9px] tracking-widest rounded shadow-md shadow-cyan-500/10 border border-cyan-400/20 transition-all active:scale-95 cursor-pointer uppercase"
+            className="w-full py-3 bg-[#0066ff] hover:brightness-110 disabled:opacity-50 text-white font-bold tracking-widest text-[9px] rounded-sm shadow-[0_0_15px_rgba(0,102,255,0.25)] flex items-center justify-center gap-2 transition-all active:scale-98 cursor-pointer uppercase"
           >
             <RefreshCw size={11} className={recalculating ? 'animate-spin' : ''} />
-            <span>{recalculating ? 'RUNNING...' : 'RUN PIPELINE'}</span>
+            <span>{recalculating ? 'INGESTING...' : 'INITIATE SCAN'}</span>
           </button>
-        </div>
-      </header>
 
-      {/* 2. Main Dashboard panel workspace grid */}
-      <main className="flex-1 flex overflow-hidden p-4 gap-4 z-0 relative">
-        {/* Persistent left sidebar metrics & assistant chat */}
-        <div className="w-[280px] flex flex-col gap-4 shrink-0 overflow-y-auto pr-1">
-          {/* Mission Metrics panel */}
-          <div className="bg-slate-950/45 border border-cyan-500/20 rounded-lg p-3.5 space-y-3 shadow-lg select-none relative">
-            <div className="absolute top-1.5 left-1.5 w-1 h-1 border-t border-l border-white/20" />
-            <div className="absolute bottom-1.5 right-1.5 w-1 h-1 border-b border-r border-white/20" />
-            
-            <div className="text-white/40 font-mono font-bold tracking-widest uppercase text-[8px] flex items-center gap-1.5 border-b border-white/5 pb-2">
-              <MapPin size={12} className="text-cyan-400" />
-              <span>Mission Metrics</span>
-            </div>
-
-            <div className="space-y-2">
-              <MetricCard label="Recommended Landing Site" value={landingCoords} valueColor="text-white" statusColor="cyan" />
-              <MetricCard label="Landing Suitability Score" value={landingScore} valueColor="text-emerald-400" statusColor="emerald" />
-              <MetricCard label="Estimated Ice Mass" value={iceMass} valueColor="text-cyan-400" statusColor="cyan" />
-              <MetricCard label="Estimated Ice Volume" value={iceVolume} valueColor="text-cyan-400" statusColor="cyan" />
-            </div>
-          </div>
-
-          {/* Multimodal assistant container */}
-          <div className="flex-1 bg-slate-950/45 border border-cyan-500/20 rounded-lg p-3.5 flex flex-col gap-2.5 shadow-lg relative min-h-[220px]">
-            <div className="absolute top-1.5 left-1.5 w-1 h-1 border-t border-l border-white/20" />
-            <div className="absolute bottom-1.5 right-1.5 w-1 h-1 border-b border-r border-white/20" />
-
-            <div className="text-white/40 font-mono font-bold tracking-widest uppercase text-[8px] flex items-center gap-1.5 border-b border-white/5 pb-2">
-              <MessageSquare size={12} className="text-cyan-400" />
+          {/* Scientific Assistant */}
+          <div className="spatial-glass p-3 rounded-lg flex flex-col gap-2 relative min-h-[200px]">
+            <div className="text-white/30 font-mono font-bold tracking-wider uppercase text-[7.5px] flex items-center justify-between border-b border-white/5 pb-1.5">
               <span>Scientific Assistant</span>
-            </div>
-
-            {/* Provider switch toggle */}
-            <div className="flex justify-between items-center text-[8px] bg-white/[0.01] border border-white/5 p-1.5 rounded font-mono uppercase tracking-widest">
-              <span className="text-white/40">Assistant Mode:</span>
               <button 
+                type="button"
                 onClick={() => setUseGemini(!useGemini)}
-                className={`px-2 py-0.5 rounded font-extrabold transition-all cursor-pointer ${
-                  useGemini ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'bg-slate-900 text-white/30 border border-white/5'
-                }`}
+                className="text-[7px] text-cyan-400 font-extrabold tracking-wider hover:opacity-85"
               >
-                {useGemini ? 'GEMINI' : 'OPENROUTER'}
+                [{useGemini ? 'GEMINI' : 'OPENROUTER'}]
               </button>
             </div>
 
-            {/* Response area logs */}
-            <div className="flex-1 overflow-y-auto text-[8.5px] space-y-1.5 pr-1 font-mono uppercase tracking-wider scrollbar-thin select-text min-h-[100px]">
+            <div className="flex-1 overflow-y-auto text-[8px] space-y-1.5 pr-1 font-mono uppercase tracking-wider scrollbar-thin select-text min-h-[80px] max-h-[120px]">
               {assistantResponse ? (
-                <div className="p-2.5 bg-black/40 border border-white/5 rounded text-white/80 leading-relaxed max-h-[140px] overflow-y-auto">
+                <div className="p-2 bg-black/40 border border-white/5 rounded text-white/80 leading-relaxed overflow-y-auto max-h-[110px]">
                   {assistantResponse}
                 </div>
               ) : assistantLoading ? (
                 <div className="text-cyan-400/60 italic animate-pulse flex items-center gap-1">
                   <Activity size={10} className="animate-pulse" />
-                  <span>Ingesting query packets...</span>
+                  <span>Querying satellite...</span>
                 </div>
               ) : (
-                <div className="text-white/20 italic">Awaiting query input... Ask helper about ice extraction parameters.</div>
+                <div className="text-white/20 italic">Ask assistant about ice concentration parameters...</div>
               )}
             </div>
 
-            {/* Search form */}
-            <form onSubmit={handleAssistantSubmit} className="flex gap-2">
+            <form onSubmit={handleAssistantSubmit} className="flex gap-1.5">
               <input
                 type="text"
                 value={assistantInput}
                 onChange={(e) => setAssistantInput(e.target.value)}
-                placeholder="ASK ASSISTANT..."
-                className="flex-1 min-w-0 bg-[#05070a] border border-white/10 rounded px-2.5 py-1.5 text-[8.5px] text-white focus:outline-none focus:border-cyan-500/50 font-mono tracking-widest placeholder-white/20 uppercase"
+                placeholder="ASK CHAT..."
+                className="flex-1 min-w-0 bg-[#05070a] border border-white/10 rounded px-2 py-1 text-[8px] text-white focus:outline-none focus:border-cyan-500/50 font-mono tracking-wider placeholder-white/20 uppercase"
               />
               <button 
                 type="submit" 
-                className="p-2 bg-cyan-500 text-black hover:bg-cyan-400 rounded shrink-0 active:scale-95 transition-all cursor-pointer"
+                className="p-1.5 bg-cyan-500 text-black hover:bg-cyan-400 rounded shrink-0 active:scale-95 transition-all cursor-pointer"
               >
-                <Send size={11} />
+                <Send size={9} />
               </button>
             </form>
           </div>
-        </div>
 
-        {/* Dynamic central workspace panels */}
-        <div className="flex-1 flex flex-col gap-4 overflow-hidden relative">
-          {children}
+          {/* Commander profile */}
+          <div className="flex items-center gap-3 pt-3 border-t border-white/5">
+            <div className="w-8 h-8 rounded-full border border-white/10 overflow-hidden grayscale hover:grayscale-0 transition-all duration-500">
+              <img alt="Commander Vance" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbsQCcEtjd_jgzPQFcQSQNUdYgKW1BR85_2zyTefm1vPUJT2Tu8kZz3-AeouZEaO0OW4RhKIknsbjoKMYj0e6JA2weNjj9ktTj155fs2JjU3Gh1GFRrNeNgqd0R42Y-SmCwXrv5p9CyvdY69XXEerRHrL9GufnNI4PXZwBOSkbdyoD8YtNbfdsy-JnchEdvV8x4Bve10ieR2OCs1yDMGG8Zky-Nc1OJsWafDfinQ5V_Twc9E-vGwMd2A"/>
+            </div>
+            <div>
+              <p className="font-mono text-[9px] font-bold text-white">CMD. A. VANCE</p>
+              <p className="text-[7.5px] text-white/30 uppercase tracking-widest">Mission Lead</p>
+            </div>
+          </div>
         </div>
-      </main>
+      </aside>
+
+      {/* 2. Main Workstation Panel */}
+      <div className="flex-1 flex flex-col h-full overflow-hidden">
+        {/* Top Header telemetry beam */}
+        <header className="flex justify-between items-center w-full px-8 h-16 bg-[#0c0e10]/80 backdrop-blur-md border-b border-white/5 select-none shrink-0 z-30">
+          <div className="flex items-center gap-6">
+            <h1 className="font-sans font-black text-sm tracking-widest text-white uppercase">PHSE MISSION CONTROL</h1>
+            <div className="flex items-center gap-2 px-2.5 py-0.5 bg-cyan-500/10 rounded-full border border-cyan-500/20">
+              <div className="status-pip animate-pulse" />
+              <span className="font-mono text-[8px] text-cyan-400 font-bold tracking-wider uppercase">Telemetry Stable</span>
+            </div>
+          </div>
+
+          {/* Telemetry Widgets */}
+          <div className="flex items-center gap-6 text-[9px] font-mono">
+            <div className="border-l border-white/10 pl-4 py-1">
+              <span className="text-white/30 block uppercase text-[7.5px] tracking-wider">Lander Target</span>
+              <span className="text-white font-bold">{landingCoords}</span>
+            </div>
+            <div className="border-l border-white/10 pl-4 py-1">
+              <span className="text-white/30 block uppercase text-[7.5px] tracking-wider">Suitability</span>
+              <span className="text-emerald-400 font-bold">{landingScore}</span>
+            </div>
+            <div className="border-l border-white/10 pl-4 py-1">
+              <span className="text-white/30 block uppercase text-[7.5px] tracking-wider">Ice mass</span>
+              <span className="text-cyan-400 font-bold">{iceMass}</span>
+            </div>
+            <div className="border-l border-white/10 pl-4 py-1">
+              <span className="text-white/30 block uppercase text-[7.5px] tracking-wider">Ice volume</span>
+              <span className="text-cyan-400 font-bold">{iceVolume}</span>
+            </div>
+          </div>
+
+          {/* ISRO watermark */}
+          <div className="flex items-center gap-1.5 text-[8.5px] text-white/50 border border-white/10 px-2 py-0.5 rounded bg-white/[0.01] font-bold font-mono tracking-wider uppercase">
+            <Award size={10} className="text-amber-500" />
+            <span>Antariksh 2026</span>
+          </div>
+        </header>
+
+        {/* 3. Children workspace content */}
+        <main className="flex-1 overflow-hidden p-6 relative">
+          {children}
+        </main>
+      </div>
     </div>
   );
 };

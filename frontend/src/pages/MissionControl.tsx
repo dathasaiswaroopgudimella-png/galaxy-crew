@@ -12,23 +12,23 @@ export const MissionControl: React.FC = () => {
   const activeMode = usePHSEStore((state) => state.activeMode);
 
   return (
-    <div className="flex-1 flex flex-col gap-4 overflow-hidden">
+    <div className="flex-1 flex flex-col gap-6 h-full overflow-hidden">
       {/* 3D Visualizer Workspace - Centered Centerpiece */}
       <div className="flex-1 min-h-[320px]">
         <ThreeViewer />
       </div>
 
       {/* Mode Specific Analysis Workspace - Bottom panel using asymmetric grids */}
-      <div className="h-[250px] shrink-0">
+      <div className="h-[280px] shrink-0">
         {activeMode === 'overview' && (
-          <div className="grid grid-cols-[3fr_2fr] gap-4 h-full">
+          <div className="grid grid-cols-[3fr_2fr] gap-6 h-full">
             <DecisionTree />
             <TelemetryTerminal />
           </div>
         )}
 
         {activeMode === 'reasoning' && (
-          <div className="grid grid-cols-[4fr_3fr_3fr] gap-4 h-full">
+          <div className="grid grid-cols-[3.8fr_3.1fr_3.1fr] gap-6 h-full">
             <ReasoningInspector />
             <ExplainabilityTimeline />
             <EvidenceViewer />
@@ -36,7 +36,7 @@ export const MissionControl: React.FC = () => {
         )}
 
         {activeMode === 'engineering' && (
-          <div className="grid grid-cols-[3fr_2fr] gap-4 h-full">
+          <div className="grid grid-cols-[3fr_2fr] gap-6 h-full">
             <TelemetryTerminal />
             <DiagnosticPanel />
           </div>

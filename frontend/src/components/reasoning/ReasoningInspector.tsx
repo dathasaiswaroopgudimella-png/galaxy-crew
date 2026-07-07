@@ -1,9 +1,9 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { usePHSEStore } from '../../stores/usePHSEStore'
 import { HYPOTHESES } from '../../constants'
 import { ScientificCard } from '../scientific/ScientificCard'
 import { ProbabilityBar } from '../scientific/ProbabilityBar'
-import { Brain, ArrowUpRight, Layers, Activity } from 'lucide-react'
+import { Brain, Layers, Activity, ShieldCheck, HelpCircle, MapPin, ListFilter } from 'lucide-react'
 
 export const ReasoningInspector: React.FC = () => {
   const selectedHyp = usePHSEStore((state) => state.selectedHypothesis);
@@ -12,6 +12,8 @@ export const ReasoningInspector: React.FC = () => {
   const hoverCoords = usePHSEStore((state) => state.hoverCoords);
   const hoverDetails = usePHSEStore((state) => state.hoverDetails);
   const playbackStep = usePHSEStore((state) => state.playbackStep);
+
+  const [activePipelineStep, setActivePipelineStep] = useState<'inputs' | 'bayesian' | 'ahs'>('inputs');
 
   const getProbabilities = () => {
     if (hoverDetails && hoverDetails.probabilities) {
@@ -37,7 +39,7 @@ export const ReasoningInspector: React.FC = () => {
   const activeHypObj = HYPOTHESES.find(h => h.id === selectedHyp) || HYPOTHESES[0];
   const activeProbability = probs[activeHypObj.id] ?? 0.0;
 
-  // Real-time dynamic evidence check based on coordinate data
+  // Evidence checker
   const getEvidenceStatus = (hypId: string) => {
     const cpr = hoverDetails?.cpr ?? 0.3;
     const dop = hoverDetails?.dop ?? 0.8;
@@ -47,17 +49,17 @@ export const ReasoningInspector: React.FC = () => {
     const conflict: string[] = [];
 
     if (hypId === 'pure_water_ice') {
-      if (cpr > 1.1) support.push("Anomalous CPR return (>1.1) matches CBOE"); else conflict.push("Low CPR return (<1.1) contradicts pure ice");
-      if (dop < 0.4) support.push("Low DOP (<0.4) indicates high volume scattering"); else conflict.push("High DOP (>0.4) indicates surface reflection");
-      if (slope < 10.0) support.push("Terrain slope (<10°) inside cold trap is safe"); else conflict.push("Steep local slope (>10°) impedes accumulation");
+      if (cpr > 1.1) support.push("CPR return (>1.1) matches pure ice"); else conflict.push("Low CPR return contradicts ice");
+      if (dop < 0.4) support.push("Low DOP (<0.4) matches volume scattering"); else conflict.push("High DOP indicates surface reflection");
+      if (slope < 10.0) support.push("Slope (<10°) inside cold trap matches accumulation"); else conflict.push("Steep slope impedes accumulation");
     } else if (hypId === 'ice_regolith_mixture') {
-      if (cpr >= 0.6 && cpr <= 1.2) support.push("Moderate CPR anomaly (0.6 to 1.2)"); else conflict.push(`CPR of ${cpr.toFixed(2)} outside mixture boundaries`);
-      if (dop >= 0.2 && dop <= 0.6) support.push("Moderate depolarization bounds matching"); else conflict.push("Depolarization bounds outside regolith mixture limits");
+      if (cpr >= 0.6 && cpr <= 1.2) support.push("Moderate CPR anomaly matches mixture limits"); else conflict.push("CPR outside mixture boundaries");
+      if (dop >= 0.2 && dop <= 0.6) support.push("Moderate depolarization matches mixture"); else conflict.push("Depolarization outside mixture limits");
     } else if (hypId === 'blocky_ejecta') {
-      if (cpr > 0.8) support.push("High CPR surface scattering"); else conflict.push("Insufficient CPR return for blocky ejecta blankets");
-      if (slope > 10.0) support.push("Steep crater wall/rim slopes"); else conflict.push("Flat floor slopes conflict with boulder piles");
+      if (cpr > 0.8) support.push("High CPR matches surface boulder scattering"); else conflict.push("Low CPR contradicts boulder ejecta");
+      if (slope > 10.0) support.push("Crater rim slopes match blocky ejecta"); else conflict.push("Flat terrain conflicts with boulder piles");
     } else {
-      support.push("Baseline radar values within standard standard deviation ranges.");
+      support.push("Standard polar regolith radar baseline parameters matched.");
     }
 
     return { support, conflict };
@@ -69,24 +71,51 @@ export const ReasoningInspector: React.FC = () => {
     return Math.max(0, 1 - p).toFixed(3);
   };
 
+  const pipelineStages = [
+    { id: 'inputs', label: 'OBS ➔ EVI ➔ HYP', desc: 'Observation & Evidence Input' },
+    { id: 'bayesian', label: 'LIK ➔ BAY', desc: 'Likelihood & Bayesian Update' },
+    { id: 'ahs', label: 'AHS ➔ ENT ➔ REC', desc: 'Elimination & Recommendation' },
+  ];
+
   return (
     <ScientificCard
       title="Reasoning Inspector"
-      subtitle="LIVE HYPOTHESIS BAYESIAN TELEMETRY"
+      subtitle="PLANETARY HYPOTHESIS PIPELINE FLOW"
       icon={<Brain size={14} className="text-cyan-400" />}
       actions={
         hoverCoords && (
-          <span className="text-[8px] px-2 py-0.5 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded font-mono tracking-widest">
-            QUERY: {hoverCoords.x.toString().padStart(4, '0')} / {hoverCoords.y.toString().padStart(4, '0')}
+          <span className="text-[7.5px] px-2 py-0.5 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded font-mono tracking-wider">
+            POS: {hoverCoords.x.toString().padStart(3, '0')},{hoverCoords.y.toString().padStart(3, '0')}
           </span>
         )
       }
     >
-      <div className="space-y-4 text-xs">
-        {/* Hypotheses Grid */}
-        <div className="space-y-2">
-          <span className="text-white/40 font-mono font-bold block uppercase tracking-widest text-[9px]">Active Geological Hypotheses</span>
-          <div className="grid grid-cols-5 gap-2">
+      <div className="flex flex-col h-full gap-3 text-[9px] font-mono justify-between">
+        {/* 1. Interactive 8-Stage Pipeline flow tracker */}
+        <div className="flex items-center justify-between bg-black/40 border border-white/5 rounded-md p-1 px-2 select-none">
+          {pipelineStages.map((stage) => {
+            const isActive = activePipelineStep === stage.id;
+            return (
+              <button
+                key={stage.id}
+                onClick={() => setActivePipelineStep(stage.id as any)}
+                className={`px-2 py-1 rounded text-[7.5px] font-bold transition-all cursor-pointer ${
+                  isActive 
+                    ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' 
+                    : 'text-white/30 hover:text-white/60 border border-transparent'
+                }`}
+                title={stage.desc}
+              >
+                {stage.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* 2. Hypotheses Selector Grid (Step 3: Hypothesis Selection) */}
+        <div className="space-y-1">
+          <span className="text-white/30 text-[7px] uppercase tracking-widest font-bold">Step 3: Hypothesis Selection</span>
+          <div className="grid grid-cols-5 gap-1">
             {HYPOTHESES.map((hyp) => {
               const p = probs[hyp.id] ?? 0.0;
               const isSelected = selectedHyp === hyp.id;
@@ -94,20 +123,19 @@ export const ReasoningInspector: React.FC = () => {
                 <button
                   key={hyp.id}
                   onClick={() => setSelectedHyp(hyp.id)}
-                  className={`flex flex-col items-center p-2 rounded border transition-all text-center select-none cursor-pointer relative overflow-hidden ${
+                  className={`flex flex-col items-center p-1 py-1.5 rounded border transition-all text-center select-none cursor-pointer relative overflow-hidden ${
                     isSelected 
-                      ? 'bg-cyan-500/10 border-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.15)]' 
-                      : 'bg-white/[0.01] border-white/5 hover:bg-white/[0.03] hover:border-white/10'
+                      ? 'bg-cyan-500/10 border-cyan-500/40 shadow-[0_0_8px_rgba(6,182,212,0.15)]' 
+                      : 'bg-white/[0.01] border-white/5 hover:bg-white/[0.02] hover:border-white/10'
                   }`}
                 >
-                  {/* Subtle technical LED indicator on top of selected card */}
                   {isSelected && (
-                    <div className="absolute top-0 left-0 w-full h-[2px] bg-cyan-400 shadow-[0_0_5px_#22d3ee]" />
+                    <div className="absolute top-0 left-0 w-full h-[1.5px] bg-cyan-400 shadow-[0_0_5px_#00e5ff]" />
                   )}
-                  <span className="text-[8px] font-mono font-bold text-white/50 truncate w-full tracking-tighter uppercase">{hyp.name.split(' ').slice(-2).join(' ')}</span>
-                  <span className="text-xs font-bold font-mono text-white mt-1">{(p * 100).toFixed(1)}%</span>
-                  <div className="w-full mt-1.5">
-                    <ProbabilityBar value={p} colorClass={isSelected ? 'bg-cyan-400' : 'bg-white/10'} heightClass="h-[2px]" />
+                  <span className="text-[6.5px] text-white/40 truncate w-full tracking-tighter uppercase font-bold">{hyp.name.split(' ').pop()}</span>
+                  <span className="text-[9px] font-extrabold text-white mt-0.5">{(p * 100).toFixed(0)}%</span>
+                  <div className="w-full mt-1 px-0.5">
+                    <ProbabilityBar value={p} colorClass={isSelected ? 'bg-cyan-400' : 'bg-white/10'} heightClass="h-[1.5px]" />
                   </div>
                 </button>
               );
@@ -115,109 +143,140 @@ export const ReasoningInspector: React.FC = () => {
           </div>
         </div>
 
-        {/* Selected Hypothesis Breakdown Panel */}
-        <div className="p-3 bg-white/[0.01] border border-white/5 rounded-lg space-y-3 relative">
-          {/* Cyber corners */}
-          <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-cyan-500/30" />
-          <div className="absolute bottom-0 right-0 w-1.5 h-1.5 border-b border-r border-cyan-500/30" />
-
-          <div className="flex justify-between items-start">
-            <div className="space-y-0.5">
-              <h4 className="font-sans font-black text-white text-[11px] uppercase tracking-wider">{activeHypObj.name}</h4>
-              <p className="text-[9px] text-white/50 leading-relaxed font-mono">{activeHypObj.desc}</p>
-            </div>
-            <div className="flex items-center gap-1.5 text-[8px] px-2 py-0.5 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded font-mono uppercase tracking-widest shrink-0">
-              <ArrowUpRight size={10} />
-              <span>Prior: {activeHypObj.prior.toFixed(1)}%</span>
-            </div>
-          </div>
-
-          {/* Probability & Uncertainty Progress HUD */}
-          <div className="grid grid-cols-2 gap-4 text-[9px] font-mono border-t border-b border-white/5 py-2.5">
-            <div>
-              <span className="text-white/30 block uppercase tracking-widest text-[8px]">Posterior Probability</span>
-              <span className="text-cyan-400 font-extrabold text-sm tracking-wider">{(activeProbability * 100).toFixed(4)}%</span>
-            </div>
-            <div>
-              <span className="text-white/30 block uppercase tracking-widest text-[8px]">Shannon Uncertainty</span>
-              <span className="text-amber-500 font-extrabold text-sm tracking-wider">{getUncertainty(activeProbability)} bits</span>
-            </div>
-          </div>
-
-          {/* Scientific Evidence Logs */}
-          <div className="grid grid-cols-2 gap-3 text-[9px] font-mono">
-            <div className="p-2.5 bg-emerald-500/[0.02] border border-emerald-500/15 rounded space-y-1">
-              <span className="text-emerald-400 font-bold block uppercase tracking-widest text-[8px]">✓ Supporting Evidence</span>
-              {support.map((s, i) => (
-                <div key={i} className="text-white/70 leading-relaxed">• {s}</div>
-              ))}
-            </div>
-            <div className="p-2.5 bg-rose-500/[0.02] border border-rose-500/15 rounded space-y-1">
-              <span className="text-rose-400 font-bold block uppercase tracking-widest text-[8px]">✗ Conflicting Evidence</span>
-              {conflict.length === 0 ? (
-                <div className="text-white/30 italic">No conflicting parameters resolved.</div>
-              ) : (
-                conflict.map((c, i) => (
-                  <div key={i} className="text-white/70 leading-relaxed">• {c}</div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Physical Constraint Bound limits table */}
-          <div className="space-y-1.5 pt-1">
-            <span className="text-white/40 font-mono font-bold block uppercase tracking-widest text-[8px]">Geological Constraints Matrix</span>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[9px] text-white/50 font-mono">
-              {Object.entries(activeHypObj.constraints).map(([feat, limit]) => (
-                <div key={feat} className="flex justify-between border-b border-white/[0.02] py-0.5">
-                  <span className="text-white/40">{feat}</span>
-                  <span className="text-white">{limit}</span>
+        {/* 3. Selected Step Details */}
+        <div className="flex-1 overflow-y-auto pr-1">
+          {activePipelineStep === 'inputs' && (
+            <div className="space-y-2.5">
+              {/* Step 1: Observation Input */}
+              <div className="p-2.5 bg-white/[0.01] border border-white/5 rounded-md relative space-y-1.5">
+                <div className="absolute top-0 left-0 w-1 h-1 border-t border-l border-white/20" />
+                <span className="text-white/40 text-[7.5px] uppercase tracking-widest font-bold flex items-center gap-1">
+                  <MapPin size={10} className="text-cyan-400 animate-pulse" />
+                  <span>Step 1: Observation Input</span>
+                </span>
+                <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[8.5px] text-white/70">
+                  <div><span className="text-white/30">CPR ANOM:</span> {hoverDetails?.cpr?.toFixed(3) ?? '0.342'}</div>
+                  <div><span className="text-white/30">DOP ANOM:</span> {hoverDetails?.dop?.toFixed(3) ?? '0.801'}</div>
+                  <div><span className="text-white/30">DEM SLOPE:</span> {hoverDetails?.dem ? (Math.min(25, Math.abs(hoverDetails.dem - 100) * 1.2)).toFixed(2) : '3.20'}°</div>
+                  <div><span className="text-white/30">ICE TARGET:</span> {selectedHyp === 'pure_water_ice' ? 'COLD TRAP' : 'REGOLITH'}</div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* AHS & Bayesian Updates HUD */}
-        <div className="grid grid-cols-2 gap-3 font-mono">
-          {/* AHS Decider Info */}
-          <div className="p-3 bg-white/[0.01] border border-white/5 rounded space-y-2 relative">
-            <div className="flex items-center gap-1.5 text-[9px] text-amber-500 font-bold uppercase tracking-widest">
-              <Layers size={11} className="text-amber-500" />
-              <span>AHS Separation</span>
-            </div>
-            <p className="text-[9px] text-white/40 leading-normal">
-              Optimal separation calculated at Step {playbackStep} utilizing Kullback-Leibler Divergence.
-            </p>
-            <div className="grid grid-cols-2 gap-2 text-[9px]">
-              <div className="bg-white/[0.01] p-1.5 border border-white/5 rounded">
-                <span className="text-white/30 block text-[7px] uppercase tracking-wider">Separation (KLD)</span>
-                <span className="text-white font-bold">14.67 bits</span>
               </div>
-              <div className="bg-white/[0.01] p-1.5 border border-white/5 rounded">
-                <span className="text-white/30 block text-[7px] uppercase tracking-wider">Expected Gain</span>
-                <span className="text-white font-bold">0.82 bits</span>
+
+              {/* Step 2: Evidence Filtering */}
+              <div className="grid grid-cols-2 gap-2">
+                <div className="p-2 bg-emerald-500/[0.02] border border-emerald-500/10 rounded-md space-y-1 leading-relaxed">
+                  <span className="text-emerald-400 font-bold block uppercase text-[7px] tracking-widest">✓ Step 2: Supporting Evidence</span>
+                  {support.slice(0, 2).map((s, i) => (
+                    <div key={i} className="text-white/70 text-[8px] leading-snug">• {s}</div>
+                  ))}
+                </div>
+                <div className="p-2 bg-rose-500/[0.02] border border-rose-500/10 rounded-md space-y-1 leading-relaxed">
+                  <span className="text-rose-400 font-bold block uppercase text-[7px] tracking-widest">✗ Step 2: Conflicting Evidence</span>
+                  {conflict.length === 0 ? (
+                    <div className="text-white/20 italic text-[7.5px]">No conflicts found.</div>
+                  ) : (
+                    conflict.slice(0, 2).map((c, i) => (
+                      <div key={i} className="text-white/70 text-[8px] leading-snug">• {c}</div>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Bayesian Likelihood updates HUD */}
-          <div className="p-3 bg-white/[0.01] border border-white/5 rounded space-y-2">
-            <div className="flex items-center gap-1.5 text-[9px] text-cyan-400 font-bold uppercase tracking-widest">
-              <Activity size={11} className="text-cyan-400" />
-              <span>Bayesian Engine</span>
+          {activePipelineStep === 'bayesian' && (
+            <div className="space-y-2.5">
+              {/* Step 4: Likelihood Mapping */}
+              <div className="p-2.5 bg-white/[0.01] border border-white/5 rounded-md relative space-y-1">
+                <div className="absolute top-0 left-0 w-1 h-1 border-t border-l border-white/20" />
+                <span className="text-white/40 text-[7.5px] uppercase tracking-widest font-bold flex items-center gap-1">
+                  <ListFilter size={10} className="text-cyan-400" />
+                  <span>Step 4: Likelihood Constraints Matrix</span>
+                </span>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-[8px] text-white/50 pt-1">
+                  {Object.entries(activeHypObj.constraints).map(([feat, limit]) => (
+                    <div key={feat} className="flex justify-between border-b border-white/[0.02] py-0.5">
+                      <span className="text-white/30 uppercase">{feat}:</span>
+                      <span className="text-white font-bold">{limit}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Step 5: Bayesian Assimilation */}
+              <div className="p-2.5 bg-cyan-500/[0.02] border border-cyan-500/10 rounded-md space-y-1">
+                <span className="text-cyan-400 text-[7.5px] font-bold block uppercase tracking-widest flex items-center gap-1">
+                  <Activity size={10} className="text-cyan-400" />
+                  <span>Step 5: Bayesian Assimilation Update</span>
+                </span>
+                <p className="text-white/60 leading-normal text-[8px]">
+                  P({activeHypObj.name.split(' ').pop()} | Evidence) = P(Prior) * P(Likelihood) / Margin
+                </p>
+                <div className="flex items-center justify-between text-[8px] pt-1 bg-black/40 border border-white/5 p-1.5 rounded">
+                  <div>
+                    <span className="text-white/30 block text-[6.5px] uppercase">Prior</span>
+                    <span className="text-white font-bold">{activeHypObj.prior.toFixed(1)}%</span>
+                  </div>
+                  <span className="text-white/30 font-bold">×</span>
+                  <div>
+                    <span className="text-cyan-400 font-bold block text-[6.5px] uppercase">Likelihood</span>
+                    <span className="text-cyan-400 font-bold">{(activeProbability * 1.25).toFixed(2)}</span>
+                  </div>
+                  <span className="text-white/30 font-bold">➔</span>
+                  <div>
+                    <span className="text-emerald-400 font-bold block text-[6.5px] uppercase">Posterior</span>
+                    <span className="text-emerald-400 font-bold">{(activeProbability * 100).toFixed(2)}%</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <p className="text-[9px] text-white/40 leading-normal">
-              Assimilated multi-sensor parameters into joint posterior maps.
-            </p>
-            <div className="flex items-center gap-1 p-1.5 bg-black/40 border border-white/5 rounded text-[8px] justify-center text-white/50">
-              <span>Prior</span>
-              <span>×</span>
-              <span className="text-cyan-400 font-bold">Likelihood</span>
-              <span>=</span>
-              <span className="text-emerald-400 font-bold">Posterior</span>
+          )}
+
+          {activePipelineStep === 'ahs' && (
+            <div className="space-y-2.5">
+              {/* Step 6 & 7: AHS Elimination & Uncertainty */}
+              <div className="grid grid-cols-2 gap-2">
+                <div className="p-2.5 bg-white/[0.01] border border-white/5 rounded-md relative space-y-1">
+                  <div className="absolute top-0 left-0 w-1 h-1 border-t border-l border-white/20" />
+                  <span className="text-amber-500 font-bold block uppercase text-[7px] tracking-widest flex items-center gap-1">
+                    <Layers size={10} className="text-amber-500" />
+                    <span>Step 6: AHS Optimization</span>
+                  </span>
+                  <p className="text-white/50 text-[7.5px] leading-snug">Optimal separation solved at Step {playbackStep} via KL Divergence.</p>
+                  <div className="text-white font-bold text-[9px] pt-1">
+                    KLD: <span className="text-white">14.67 bits</span>
+                  </div>
+                </div>
+
+                <div className="p-2.5 bg-white/[0.01] border border-white/5 rounded-md relative space-y-1">
+                  <div className="absolute top-0 left-0 w-1 h-1 border-t border-l border-white/20" />
+                  <span className="text-cyan-400 font-bold block uppercase text-[7px] tracking-widest flex items-center gap-1">
+                    <HelpCircle size={10} className="text-cyan-400" />
+                    <span>Step 7: Uncertainty</span>
+                  </span>
+                  <p className="text-white/50 text-[7.5px] leading-snug">Remaining Shannon Entropy classification uncertainty.</p>
+                  <div className="text-cyan-400 font-bold text-[9px] pt-1">
+                    H: <span className="text-cyan-400">{getUncertainty(activeProbability)} bits</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 8: Recommendation */}
+              <div className="p-2.5 bg-cyan-500/5 border border-cyan-500/20 rounded-md relative flex items-center justify-between gap-3">
+                <div className="absolute top-0 left-0 w-1 h-1 border-t border-l border-cyan-400/40" />
+                <div className="absolute bottom-0 right-0 w-1 h-1 border-b border-r border-cyan-400/40" />
+                <div className="space-y-0.5">
+                  <span className="text-cyan-400 text-[7.5px] font-bold block uppercase tracking-widest">Step 8: Landing Recommendation</span>
+                  <p className="text-white font-black text-[10px] uppercase">
+                    {results ? `SITE RESOLVED: (${results.landing_x}, ${results.landing_y})` : 'AWAITING SCAN RUN'}
+                  </p>
+                </div>
+                <div className="w-6 h-6 rounded bg-cyan-400/10 border border-cyan-400/30 flex items-center justify-center text-cyan-400">
+                  <ShieldCheck size={14} className="animate-pulse" />
+                </div>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </ScientificCard>

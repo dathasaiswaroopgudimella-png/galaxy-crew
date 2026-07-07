@@ -30,38 +30,49 @@ const DecisionNode: React.FC<DecisionNodeProps> = ({
 
   const getStatusColor = () => {
     switch (status) {
-      case 'pass': return 'text-emerald-400 border-emerald-500/20 bg-emerald-500/[0.02] shadow-[0_0_10px_rgba(16,185,129,0.02)]';
-      case 'warning': return 'text-amber-400 border-amber-500/20 bg-amber-500/[0.02] shadow-[0_0_10px_rgba(245,158,11,0.02)]';
-      default: return 'text-cyan-400 border-cyan-500/20 bg-cyan-500/[0.02] shadow-[0_0_10px_rgba(6,182,212,0.02)]';
+      case 'pass': return 'text-emerald-400 border-emerald-500/20 bg-emerald-500/[0.01] hover:border-emerald-500/30';
+      case 'warning': return 'text-amber-400 border-amber-500/20 bg-amber-500/[0.01] hover:border-amber-500/30';
+      default: return 'text-cyan-400 border-cyan-500/20 bg-cyan-500/[0.01] hover:border-cyan-500/30';
+    }
+  };
+
+  const getStatusIndicator = () => {
+    switch (status) {
+      case 'pass': return 'bg-emerald-400 shadow-[0_0_6px_#34d399]';
+      case 'warning': return 'bg-amber-400 shadow-[0_0_6px_#fbbf24]';
+      default: return 'bg-cyan-400 shadow-[0_0_6px_#00e5ff]';
     }
   };
 
   return (
-    <div className="flex flex-col ml-3.5 border-l border-white/10 pl-3.5 py-1 relative font-mono text-[9px]">
+    <div className="flex flex-col ml-3 border-l border-white/5 pl-3 py-0.5 relative font-mono text-[8px]">
       {/* Target Connector Node Dot */}
-      <div className="absolute left-0 top-3 w-1 h-1 rounded-full bg-white/20 -translate-x-[2px]" />
+      <div className="absolute left-0 top-3 w-1 h-1 rounded-full bg-white/10 -translate-x-[2px]" />
 
-      <div className={`flex flex-col p-2 rounded border transition-all duration-300 relative ${getStatusColor()}`}>
+      <div className={`flex flex-col p-2 rounded-sm border transition-all duration-300 relative ${getStatusColor()}`}>
         <div className="flex items-center justify-between gap-3">
           <div 
             onClick={() => hasChildren && setIsOpen(!isOpen)}
             className={`flex-1 flex items-center gap-1.5 ${hasChildren ? 'cursor-pointer hover:opacity-85' : ''} select-none`}
           >
             {hasChildren && (
-              <span className="opacity-60">{isOpen ? <ChevronDown size={10} /> : <ChevronRight size={10} />}</span>
+              <span className="text-white/40">{isOpen ? <ChevronDown size={8} /> : <ChevronRight size={8} />}</span>
             )}
-            <div>
-              <span className="font-sans font-bold text-white uppercase tracking-wider block">{label}</span>
-              {weight && <span className="text-[7.5px] text-white/40 uppercase tracking-widest">Weight: {weight}</span>}
+            <div className="flex items-center gap-1.5">
+              <span className={`w-1 h-1 rounded-full ${getStatusIndicator()}`} />
+              <div>
+                <span className="font-sans font-bold text-white uppercase tracking-wider block text-[8.5px]">{label}</span>
+                {weight && <span className="text-[7.5px] text-white/30 uppercase tracking-widest leading-none">Weight: {weight}</span>}
+              </div>
             </div>
           </div>
           
           <div className="flex items-center gap-1.5 shrink-0">
-            <span className="font-bold text-white bg-white/5 px-1.5 py-0.5 rounded border border-white/5 text-[8px]">{value}</span>
+            <span className="font-bold text-white bg-white/5 px-1.5 py-0.5 rounded border border-white/5 text-[7.5px]">{value}</span>
             {(rationale || alternatives) && (
               <button 
                 onClick={() => setShowRationals(!showRationals)}
-                className="px-1.5 py-0.5 bg-white/5 border border-white/10 hover:bg-white/10 rounded text-[7.5px] text-white/50 hover:text-white transition-all cursor-pointer font-bold tracking-widest uppercase"
+                className="px-1.5 py-0.5 bg-white/5 border border-white/10 hover:bg-white/20 rounded text-[7.5px] text-white/50 hover:text-white transition-all cursor-pointer font-bold tracking-widest uppercase"
               >
                 {showRationals ? 'Close' : 'Explain'}
               </button>
@@ -71,13 +82,13 @@ const DecisionNode: React.FC<DecisionNodeProps> = ({
 
         {/* Explain details panel */}
         {showRationals && (
-          <div className="mt-2 pt-2 border-t border-white/5 space-y-1.5 text-[8.5px] text-white/60 leading-relaxed uppercase tracking-wider">
-            {details && <div><span className="font-sans font-black text-cyan-400 uppercase">Evidence:</span> {details}</div>}
-            {rationale && <div><span className="font-sans font-black text-cyan-400 uppercase">Scientific Rationale:</span> {rationale}</div>}
+          <div className="mt-1.5 pt-1.5 border-t border-white/5 space-y-1 text-[8px] text-white/60 leading-relaxed uppercase tracking-wider">
+            {details && <div><span className="font-sans font-black text-cyan-400 uppercase mr-1">Evidence:</span>{details}</div>}
+            {rationale && <div><span className="font-sans font-black text-cyan-400 uppercase mr-1">Rationale:</span>{rationale}</div>}
             {alternatives && alternatives.length > 0 && (
-              <div>
+              <div className="pt-0.5">
                 <span className="font-sans font-black text-cyan-400 uppercase block mb-0.5">Alternative Options:</span>
-                {alternatives.map((alt, idx) => <div key={idx} className="pl-1.5">• {alt}</div>)}
+                {alternatives.map((alt, idx) => <div key={idx} className="pl-1">• {alt}</div>)}
               </div>
             )}
           </div>

@@ -157,7 +157,7 @@ export const ExplainabilityTimeline: React.FC = () => {
         </div>
 
         {/* Plotly Entropy Plot */}
-        <div className="bg-black/30 border border-white/10 rounded p-1.5 flex items-center justify-center overflow-hidden h-[120px]">
+        <div className="bg-black/30 border border-white/10 rounded p-1 flex items-center justify-center overflow-hidden h-[120px]">
           <Plot
             data={[
               {
@@ -165,28 +165,28 @@ export const ExplainabilityTimeline: React.FC = () => {
                 y: trajectory,
                 type: 'scatter',
                 mode: 'lines+markers',
-                marker: { color: '#00e5ff', size: 6 },
-                line: { color: '#2979ff', width: 2 },
+                marker: { color: '#ffffff', size: 5, line: { color: '#00e5ff', width: 1.5 } },
+                line: { color: '#00e5ff', width: 1.5 },
                 name: 'Shannon Entropy'
               }
             ]}
             layout={{
               autosize: true,
               height: 105,
-              margin: { l: 35, r: 15, t: 15, b: 20 },
+              margin: { l: 25, r: 10, t: 15, b: 20 },
               paper_bgcolor: 'rgba(0,0,0,0)',
               plot_bgcolor: 'rgba(0,0,0,0)',
               title: {
-                text: 'Bayesian Entropy Convergence (Bits)',
-                font: { color: '#90a4ae', size: 8, family: 'IBM Plex Sans' }
+                text: 'BAYESIAN ENTROPY CONVERGENCE (BITS)',
+                font: { color: '#bac9cc', size: 7.5, family: 'IBM Plex Sans', weight: 'bold' }
               },
               xaxis: {
-                gridcolor: 'rgba(255,255,255,0.03)',
-                tickfont: { color: '#90a4ae', size: 7, family: 'JetBrains Mono' }
+                gridcolor: 'rgba(255,255,255,0.015)',
+                tickfont: { color: '#849396', size: 6.5, family: 'JetBrains Mono' }
               },
               yaxis: {
-                gridcolor: 'rgba(255,255,255,0.03)',
-                tickfont: { color: '#90a4ae', size: 7, family: 'JetBrains Mono' }
+                gridcolor: 'rgba(255,255,255,0.015)',
+                tickfont: { color: '#849396', size: 6.5, family: 'JetBrains Mono' }
               }
             }}
             config={{ displayModeBar: false, responsive: true }}
